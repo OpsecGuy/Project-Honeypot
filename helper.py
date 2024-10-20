@@ -12,6 +12,7 @@ class Config:
         if not os.path.exists("config.json"):
             print('Config file does not exist. Creating new one...')
             self.create_config_file()
+            os._exit(1)
         
         self.options = self.read_config_file()
     

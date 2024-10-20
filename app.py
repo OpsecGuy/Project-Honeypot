@@ -3,8 +3,8 @@ from helper import *
 
 
 logging.basicConfig(filename="application.log", level=logging.INFO, format='%(asctime)s - %(message)s') # Set up logging
-
 cfg = Config()
+
 
 class UDPServerProtocol(asyncio.DatagramProtocol):
     def __init__(self, port):
