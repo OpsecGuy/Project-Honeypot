@@ -41,7 +41,6 @@ def is_potential_botnet(data: bytes):
     payload_bytes = [bytes.fromhex(payload) for payload in payloads]
 
     for payload in payload_bytes:
-        print(f"is {payload.hex()} in {data.hex()} | {payload.hex() in data.hex()}\n\n")
         if payload.hex() in data.hex():
             return True
     return False
