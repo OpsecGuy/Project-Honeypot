@@ -38,8 +38,11 @@ class Config:
 
 def is_potential_botnet(data: bytes):
     payloads = ["776765742068747470", "6375726C2068747470", "63686D6F6420"]
-    for payload in payloads:
-        if payload in data.hex():
+    payload_bytes = [bytes.fromhex(payload) for payload in payloads]
+
+    for payload in payload_bytes:
+        print(f"is {payload.hex()} in {data.hex()} | {payload.hex() in data.hex()}\n\n")
+        if payload.hex() in data.hex():
             return True
     return False
 

@@ -76,7 +76,7 @@ async def main():
                 print(f"Failed to start listener on port {port}")
                 logging.warning(f"Failed to start listener on port {port}. Reason: {err}")
 
-        print(f"UDP servers are running on ports {cfg.options["start_port"]} to {cfg.options["end_port"]}...")
+        print(f"UDP servers are running on ports {cfg.options['start_port']} to {cfg.options['end_port']}...")
         
         # Keep the servers running indefinitely
         await asyncio.sleep(float('inf'))
@@ -93,12 +93,12 @@ if __name__ == "__main__":
     logging.info("-=- Application is starting -=-")
     try:
         db = DatabaseController(cfg.options["db_ip"], cfg.options["db_name"], cfg.options["db_user"], cfg.options["db_pwd"], cfg.options["ip_addr"])
-        logging.info(f"Connected to database {cfg.options["db_name"]} as {cfg.options["db_user"]}")
+        logging.info(f"Connected to database {cfg.options['db_name']} as {cfg.options['db_user']}")
     except Exception as err:
         logging.error(f"Failed to establish database connection! Reason: {err}")
         os._exit(1)
     
-    logging.info(f"{cfg.options["ip_addr"]} is listening on ports {cfg.options["start_port"]}:{cfg.options["end_port"]}")
+    logging.info(f"{cfg.options['ip_addr']} is listening on ports {cfg.options['start_port']}:{cfg.options['end_port']}")
     asyncio.run(main())
 
 
