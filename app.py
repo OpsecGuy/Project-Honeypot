@@ -19,27 +19,24 @@ class UDPServerProtocol(asyncio.DatagramProtocol):
         # print(f"UDP server is ready and listening on port {self.port}")
 
     def datagram_received(self, data, addr):
-        if data.hex() in self.last_five_packets:
+        orginal_data = data
+        data = data.hex()
+        if data in self.last_five_packets:
             # print("Duplicate packet found, skipping database entry.")
             return
         
-        self.last_five_packets.append(data.hex())
+        self.last_five_packets.append(data)
         print(f"[{self.port}] Received data from {addr}: {data}")
 
         try:
-            for protocol in known_payloads.get(str(self.port)).keys():
-                if data == known_payloads.get(str(self.port))[protocol]:
-                    # print(f"Match found for {protocol} | Data: {data}")
-                    break
-                protocol = "Unknown"
-
+            protocol = find_protocol_by_data(data)
         except Exception as err:
+            logging.warning(f"Protocol match failed due to: {err}")
             protocol = "Unknown"
-        
+
         try:
-            is_botnet = is_potential_botnet(data)
             db.add_payload_stats(protocol, self.port, self.protocol_type)
-            db.add_new_payload(addr[0], self.port, protocol, data, datetime.now().timestamp(), self.protocol_type, is_botnet)
+            db.add_new_payload(addr[0], self.port, protocol, data, datetime.now().timestamp(), self.protocol_type, True if protocol == "POTENTIAL BOTNETS" else False)
         except Exception as err:
             logging.warning(f"Failed to log data. Reason: {err}")
 
@@ -90,7 +87,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    logging.info("-=- Application is starting -=-")
+    logging.info(f"-=- HoneyPot v{VERSION} is starting -=-")
     try:
         db = DatabaseController(cfg.options["db_ip"], cfg.options["db_name"], cfg.options["db_user"], cfg.options["db_pwd"], cfg.options["ip_addr"])
         logging.info(f"Connected to database {cfg.options['db_name']} as {cfg.options['db_user']}")

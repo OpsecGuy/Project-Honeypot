@@ -15,7 +15,7 @@ class DatabaseController:
 
     def add_new_payload(self, ipaddr: str, port: str, protocol: str, payload: bytes, creation_date: str, protocol_type: str, is_botnet: int):
         sql_query = "INSERT INTO data (id, ipaddr, port, protocol, payload, server, creation_date, protocol_type, is_botnet) VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM data), %s, %s, %s, %s, %s, %s, %s, %s);"
-        data = (ipaddr, port, protocol, payload.hex(), self.server, creation_date, protocol_type, is_botnet,)
+        data = (ipaddr, port, protocol, payload, self.server, creation_date, protocol_type, is_botnet,)
         self.cur.execute(sql_query, data)
         self.conn.commit()
 

@@ -79,4 +79,5 @@ On first run ```config.json``` file will be created. Inside that file declare da
 
 ## ✍️ Authors <a name = "authors"></a>
 - [@OpsecGuy](https://github.com/OpsecGuy) - Idea & Initial work
+- [@Phenomite](https://github.com/Phenomite/AMP-Research/) - Inspiration
 
