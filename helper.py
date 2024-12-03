@@ -41,7 +41,6 @@ class Config:
 
 def get_ip_address_details(ip_addr: str):
     try:
-        print(ip_addr[0])
         with httpx.Client() as client:
             response = client.get(
                 url=f"https://api.ipquery.io/{ip_addr}"
@@ -50,7 +49,6 @@ def get_ip_address_details(ip_addr: str):
     except Exception as err:
         logging.warning(f"Failed to fetch IP address data due to: {err}")
         return "", "", ""
-        
 
 
 def find_protocol_by_data(data):

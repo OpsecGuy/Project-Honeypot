@@ -11,6 +11,7 @@ class DatabaseController:
             user=login,
             password=password
         )
+        self.conn.autocommit = False
         self.cur = self.conn.cursor()
 
     def add_new_payload(self, ipaddr: str, port: str, protocol: str, payload: bytes, creation_date: str, protocol_type: str, is_botnet: int, ip_country: str, ip_asn: str, ip_organization: str):
