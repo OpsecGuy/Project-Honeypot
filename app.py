@@ -34,9 +34,10 @@ class UDPServerProtocol(asyncio.DatagramProtocol):
             logging.warning(f"Protocol match failed due to: {err}")
             protocol = "Unknown"
 
+        ip_data = get_ip_address_details(addr[0])
         try:
             db.add_payload_stats(protocol, self.port, self.protocol_type)
-            db.add_new_payload(addr[0], self.port, protocol, data, datetime.now().timestamp(), self.protocol_type, True if protocol == "POTENTIAL BOTNETS" else False)
+            db.add_new_payload(addr[0], self.port, protocol, data, datetime.now().timestamp(), self.protocol_type, True if protocol == "POTENTIAL BOTNETS" else False, ip_data[0], ip_data[1], ip_data[2])
         except Exception as err:
             logging.warning(f"Failed to log data. Reason: {err}")
 

@@ -5,9 +5,9 @@ import os
 import json
 import asyncio
 import logging
+import httpx
 
-
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 
 
 class Config:
@@ -37,6 +37,20 @@ class Config:
     def read_config_file(self):
         with open("config.json", "r") as file:
             return json.load(file)
+
+
+def get_ip_address_details(ip_addr: str):
+    try:
+        print(ip_addr[0])
+        with httpx.Client() as client:
+            response = client.get(
+                url=f"https://api.ipquery.io/{ip_addr}"
+            ).json()
+            return response['location']['country'], response['isp']['asn'], response['isp']['org']
+    except Exception as err:
+        logging.warning(f"Failed to fetch IP address data due to: {err}")
+        return "", "", ""
+        
 
 
 def find_protocol_by_data(data):
