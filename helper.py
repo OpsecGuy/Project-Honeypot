@@ -7,7 +7,7 @@ import asyncio
 import logging
 import httpx
 
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 
 
 class Config:
@@ -18,7 +18,6 @@ class Config:
             os._exit(1)
         
         self.options = self.read_config_file()
-    
 
     def create_config_file(self):
         data = {
@@ -45,15 +44,15 @@ def get_ip_address_details(ip_addr: str):
             response = client.get(
                 url=f"https://api.ipquery.io/{ip_addr}"
             ).json()
-            return response['location']['country'], response['isp']['asn'], response['isp']['org']
+            return {"location": response["location"]["country"], "asn": response["isp"]["asn"], "organization": response["isp"]["org"]}
     except Exception as err:
         logging.warning(f"Failed to fetch IP address data due to: {err}")
         return "", "", ""
 
 
 def find_protocol_by_data(data):
-    for name in known_payloads.keys():
-        for payload in known_payloads[name]["payloads"]:
+    for name in KNOWN_PAYLOADS.keys():
+        for payload in KNOWN_PAYLOADS[name]["payloads"]:
             if payload["atomic_search"] == True and payload["data"].lower() in data:
                 return name
             elif payload["atomic_search"] == False and data == payload["data"].lower():
@@ -61,7 +60,8 @@ def find_protocol_by_data(data):
     return "Unknown"
 
 
-known_payloads = {
+
+KNOWN_PAYLOADS = {
     "DNS": {
         "ports": [53],
         "payloads": [
@@ -97,6 +97,14 @@ known_payloads = {
                 "data": "5591010000010000000000000679616E6465780272750000010001",
                 "atomic_search": False
             },
+            {
+                "data": "6578616D706C6503636F6D",
+                "atomic_search": True
+            },
+            {
+                "data": "697009706172726F74646E7303636F6D",
+                "atomic_search": True
+            }
         ]
     },
     "TFTP": {
@@ -104,6 +112,10 @@ known_payloads = {
         "payloads": [
             {
                 "data": "0001612E706466006F6374657400",
+                "atomic_search": False
+            },
+            {
+                "data": "00014c54456b63474a48006e6574617363696900",
                 "atomic_search": False
             }
         ]
@@ -172,8 +184,8 @@ known_payloads = {
         "ports": [137, 138, 139],
         "payloads": [
             {
-                "data": "e5d80000000100000000000020434b41414141414141414141414141414141414141414141414141414141414141410000210001",
-                "atomic_search": False
+                "data": "000100000000000020434b414141414141414141414141414141414141414141414141414141414141",
+                "atomic_search": True
             }
         ]
     },
@@ -266,16 +278,8 @@ known_payloads = {
         "ports": [3702],
         "payloads": [
             {
-                "data": "3C7464733A476574446576696365496E666F726D6174696F6E202F3E",
-                "atomic_search": False
-            },
-            {
-                "data": "3C7464733A4765745365727669636573202F3E",
-                "atomic_search": False
-            },
-            {
-                "data": "3C7464733A4765744361706162696C6974696573202F3E",
-                "atomic_search": False
+                "data": "3C7464733A476574",
+                "atomic_search": True
             },
             {
                 "data": "3C7472743A47657450726F66696C6573202F3E",
@@ -292,6 +296,10 @@ known_payloads = {
             {
                 "data": "3A3C3E2F0A",
                 "atomic_search": False
+            },
+            {
+                "data": "3C7773643A54797065733E777364703A4465766963653C2F7773643A54797065733E",
+                "atomic_search": True
             }
         ]
     },
@@ -440,15 +448,6 @@ known_payloads = {
             }
         ]
     },
-    "IPSec": {
-        "ports": [500],
-        "payloads": [
-            {
-                "data": "2100000000000000000000000000000001",
-                "atomic_search": False
-            }
-        ]
-    },
     "Sentinel": {
         "ports": [5093],
         "payloads": [
@@ -459,14 +458,46 @@ known_payloads = {
         ]
     },
     "IPSec": {
-        "ports": [4500],
+        "ports": [500, 4500],
         "payloads": [
             {
                 "data": "488B1472935D7021",
                 "atomic_search": False
+            },
+            {
+                "data": "2100000000000000000000000000000001",
+                "atomic_search": False
             }
         ]
     },
+    "RADIUS": {
+        "ports": [1645, 1646, 1812, 1813],
+        "payloads": [
+            {
+                "data": "001400000000000000000000000000000000",
+                "atomic_search": True
+            }
+        ]
+    },
+    "Chargen": {
+        "ports": [19],
+        "payloads": [
+            {
+                "data": "01",
+                "atomic_search": False
+            }
+        ]
+    },
+    # ! Not fully checked
+    # "MATIP": {
+    #     "ports": [351],
+    #     "payloads": [
+    #         {
+    #             "data": "000000010000000100000004000000080000000100000000",
+    #             "atomic_search": False
+    #         }
+    #     ]
+    # },
     "POTENTIAL BOTNETS": {
         "ports": [],
         "payloads": [

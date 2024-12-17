@@ -6,7 +6,7 @@ logging.basicConfig(filename="application.log", level=logging.INFO, format='%(as
 cfg = Config()
 
 
-class UDPServerProtocol(asyncio.DatagramProtocol):
+class UDPServer(asyncio.DatagramProtocol):
     def __init__(self, port):
         super().__init__()
         self.port = port
@@ -19,40 +19,32 @@ class UDPServerProtocol(asyncio.DatagramProtocol):
         # print(f"UDP server is ready and listening on port {self.port}")
 
     def datagram_received(self, data, addr):
-        orginal_data = data
         data = data.hex()
-        if data in self.last_five_packets:
-            # print("Duplicate packet found, skipping database entry.")
-            return
-        
-        self.last_five_packets.append(data)
-        print(f"[{self.port}] Received data from {addr}: {data}")
 
-        try:
-            protocol = find_protocol_by_data(data)
-        except Exception as err:
-            logging.warning(f"Protocol match failed due to: {err}")
-            protocol = "Unknown"
+        if data in self.last_five_packets:
+            return
+        self.last_five_packets.append(data)
+        
+        protocol = find_protocol_by_data(data)
+        print(f"[{self.port}] Received data from {addr}: {data} | Protocol: {protocol}")
 
         ip_data = get_ip_address_details(addr[0])
         try:
             db.add_payload_stats(protocol, self.port, self.protocol_type)
-            db.add_new_payload(addr[0], self.port, protocol, data, datetime.now().timestamp(), self.protocol_type, True if protocol == "POTENTIAL BOTNETS" else False, ip_data[0], ip_data[1], ip_data[2])
+            db.add_new_payload(addr[0], self.port, protocol, data, datetime.now().timestamp(), self.protocol_type, True if protocol == "POTENTIAL BOTNETS" else False, ip_data["location"], ip_data["asn"], ip_data["organization"])
         except Exception as err:
             logging.warning(f"Failed to log data. Reason: {err}")
 
     def error_received(self, exc):
-        print(f"Error on port {self.port}: {exc}")
+        logging.error(f"Error on port {self.port} due to: {exc}")
 
     def connection_lost(self, exc):
-        # print(f"Connection closed on port {self.port}")
-        # logging.info(f"Connection closed on port {self.port}")
-        pass
+        logging.warning(f"Connection closed on port {self.port} due to: {exc}")
 
 
 async def start_udp_server(port):
     loop = asyncio.get_running_loop()
-    protocol = UDPServerProtocol(port)
+    protocol = UDPServer(port)
     transport, _ = await loop.create_datagram_endpoint(
         lambda: protocol,
         local_addr=(cfg.options["ip_addr"], port)
