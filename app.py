@@ -2,8 +2,10 @@ from database import DatabaseController
 from helper import *
 
 
-logging.basicConfig(filename="application.log", level=logging.INFO, format='%(asctime)s - %(message)s') # Set up logging
 cfg = Config()
+logging.basicConfig(filename="application.log",
+                    level=logging.DEBUG if cfg.options["verbose"] == 1 else logging.WARNING,
+                    format="%(asctime)s - %(message)s")
 
 
 class UDPServer(asyncio.DatagramProtocol):
@@ -31,7 +33,7 @@ class UDPServer(asyncio.DatagramProtocol):
         ip_data = get_ip_address_details(addr[0])
         try:
             db.add_payload_stats(protocol, self.port, self.protocol_type)
-            db.add_new_payload(addr[0], self.port, protocol, data, datetime.now().timestamp(), self.protocol_type, True if protocol == "POTENTIAL BOTNETS" else False, ip_data["location"], ip_data["asn"], ip_data["organization"])
+            db.add_new_payload(addr[0], self.port, protocol, data, datetime.now().timestamp(), self.protocol_type, True if protocol == "POTENTIAL BOTNETS" else False, ip_data["location"], ip_data["asn"], ip_data["organization"], ip_data["isp"])
         except Exception as err:
             logging.warning(f"Failed to log data. Reason: {err}")
 

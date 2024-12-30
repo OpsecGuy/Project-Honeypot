@@ -1,22 +1,23 @@
 from datetime import datetime, timezone
 from collections import deque
+from pathlib import Path
 
 import os
 import json
+import httpx
 import asyncio
 import logging
-import httpx
 
-VERSION = "1.1.2"
+
+VERSION = "1.1.3"
 
 
 class Config:
     def __init__(self):
-        if not os.path.exists("config.json"):
+        if not Path("config.json").exists():
             print('Config file does not exist. Creating new one...')
             self.create_config_file()
             os._exit(1)
-        
         self.options = self.read_config_file()
 
     def create_config_file(self):
@@ -28,15 +29,15 @@ class Config:
             "db_name": "XXXXXXXXXXXX",
             "db_user": "XXXXXXXXXXXX",
             "db_pwd": "XXXXXXXXXXXXXX",
+            "verbose": 0
         }
         
-        with open("config.json", 'w') as file:
+        with Path("config.json").open("w") as file:
             file.write(json.dumps(data))
 
     def read_config_file(self):
-        with open("config.json", "r") as file:
+        with Path("config.json").open("r") as file:
             return json.load(file)
-
 
 def get_ip_address_details(ip_addr: str):
     try:
@@ -44,11 +45,10 @@ def get_ip_address_details(ip_addr: str):
             response = client.get(
                 url=f"https://api.ipquery.io/{ip_addr}"
             ).json()
-            return {"location": response["location"]["country"], "asn": response["isp"]["asn"], "organization": response["isp"]["org"]}
+            return {"location": response["location"]["country"], "asn": response["isp"]["asn"], "organization": response["isp"]["org"], "isp": response["isp"]["isp"]}
     except Exception as err:
         logging.warning(f"Failed to fetch IP address data due to: {err}")
-        return "", "", ""
-
+        return None, None, None, None
 
 def find_protocol_by_data(data):
     for name in KNOWN_PAYLOADS.keys():
@@ -58,7 +58,6 @@ def find_protocol_by_data(data):
             elif payload["atomic_search"] == False and data == payload["data"].lower():
                 return name
     return "Unknown"
-
 
 
 KNOWN_PAYLOADS = {
@@ -126,6 +125,16 @@ KNOWN_PAYLOADS = {
             {
                 "data": "01000000",
                 "atomic_search": False
+            }
+        ]
+    },
+    
+    "NFS": {
+        "ports": [2049],
+        "payloads": [
+            {
+                "data": "02000186a00000000400",
+                "atomic_search": True
             }
         ]
     },
