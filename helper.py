@@ -9,7 +9,7 @@ import asyncio
 import logging
 
 
-VERSION = "1.1.3"
+VERSION = "1.1.4"
 
 
 class Config:
@@ -25,6 +25,8 @@ class Config:
             "ip_addr": "0.0.0.0",
             "start_port": 15,
             "end_port": 1000,
+            "udp_mode": True,
+            "tcp_mode": False,
             "db_ip": "XXX.XXX.XXX.XXX",
             "db_name": "XXXXXXXXXXXX",
             "db_user": "XXXXXXXXXXXX",
@@ -33,7 +35,7 @@ class Config:
         }
         
         with Path("config.json").open("w") as file:
-            file.write(json.dumps(data))
+            file.write(json.dumps(data, indent=4))
 
     def read_config_file(self):
         with Path("config.json").open("r") as file:
