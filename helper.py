@@ -1,11 +1,10 @@
-from datetime import datetime, timezone
-from collections import deque
+
+
 from pathlib import Path
 
 import os
 import json
 import httpx
-import asyncio
 import logging
 
 
@@ -19,6 +18,7 @@ class Config:
             self.create_config_file()
             os._exit(1)
         self.options = self.read_config_file()
+
 
     def create_config_file(self):
         data = {
@@ -37,9 +37,11 @@ class Config:
         with Path("config.json").open("w") as file:
             file.write(json.dumps(data, indent=4))
 
+
     def read_config_file(self):
         with Path("config.json").open("r") as file:
             return json.load(file)
+
 
 def get_ip_address_details(ip_addr: str):
     try:
@@ -52,12 +54,13 @@ def get_ip_address_details(ip_addr: str):
         logging.warning(f"Failed to fetch IP address data due to: {err}")
         return None, None, None, None
 
+
 def find_protocol_by_data(data):
     for name in KNOWN_PAYLOADS.keys():
         for payload in KNOWN_PAYLOADS[name]["payloads"]:
-            if payload["atomic_search"] == True and payload["data"].lower() in data:
+            if payload["atomic_search"] and payload["data"].lower() in data:
                 return name
-            elif payload["atomic_search"] == False and data == payload["data"].lower():
+            elif not payload["atomic_search"] and data == payload["data"].lower():
                 return name
     return "Unknown"
 
@@ -104,6 +107,10 @@ KNOWN_PAYLOADS = {
             },
             {
                 "data": "697009706172726F74646E7303636F6D",
+                "atomic_search": True
+            },
+            {
+                "data": "56455253494F4E0442494E44",
                 "atomic_search": True
             }
         ]
@@ -311,6 +318,10 @@ KNOWN_PAYLOADS = {
             {
                 "data": "3C7773643A54797065733E777364703A4465766963653C2F7773643A54797065733E",
                 "atomic_search": True
+            },
+            {
+                "data": "687474703A2F2F736368656D61732E786D6C736F61702E6F72672F77732F323030352F30342F646973636F76657279",
+                "atomic_search": True
             }
         ]
     },
@@ -423,6 +434,15 @@ KNOWN_PAYLOADS = {
             }
         ]
     },
+    "Cisco MGPC": {
+        "ports": [2427],
+        "payloads": [
+            {
+                "data": "4D47435020",
+                "atomic_search": True
+            }
+        ]
+    },
     "DVR": {
         "ports": [37810],
         "payloads": [
@@ -445,7 +465,11 @@ KNOWN_PAYLOADS = {
         "ports": [5060],
         "payloads": [
             {
-                "data": "4F5054494F4E53",
+                "data": "4F5054494F4E53207369703A",
+                "atomic_search": True
+            },
+            {
+                "data": "494E56495445207369703A",
                 "atomic_search": True
             }
         ]
@@ -499,16 +523,6 @@ KNOWN_PAYLOADS = {
             }
         ]
     },
-    # ! Not fully checked
-    # "MATIP": {
-    #     "ports": [351],
-    #     "payloads": [
-    #         {
-    #             "data": "000000010000000100000004000000080000000100000000",
-    #             "atomic_search": False
-    #         }
-    #     ]
-    # },
     "POTENTIAL BOTNETS": {
         "ports": [],
         "payloads": [
@@ -527,8 +541,3 @@ KNOWN_PAYLOADS = {
         ]
     }
 }
-
-#? "1900": { 
-#?        "SSDP": b"M-SEARCH\r\nST:ssdp:all\r\nMAN:\"ssdp:discover\"\r\n"
-#?    },
-

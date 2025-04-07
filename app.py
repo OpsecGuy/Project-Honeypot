@@ -1,5 +1,9 @@
+from helper import logging, os, VERSION, Config, find_protocol_by_data, get_ip_address_details
 from database import DatabaseController
-from helper import *
+from datetime import datetime
+from collections import deque
+
+import asyncio
 
 
 cfg = Config()
@@ -16,9 +20,11 @@ class UDPServer(asyncio.DatagramProtocol):
         self.transport = None
         self.last_five_packets = deque(maxlen=10)
 
+
     def connection_made(self, transport):
         self.transport = transport
         # print(f"UDP server is ready and listening on port {self.port}")
+
 
     def datagram_received(self, data, addr):
         data = data.hex()
@@ -36,8 +42,10 @@ class UDPServer(asyncio.DatagramProtocol):
         except Exception as err:
             logging.warning(f"Failed to log data. Reason: {err}")
 
+
     def error_received(self, exc):
         logging.error(f"Error on port {self.port} due to: {exc}")
+
 
     def connection_lost(self, exc):
         logging.warning(f"Connection closed on port {self.port} due to: {exc}")
@@ -60,10 +68,12 @@ class TCPServer(asyncio.Protocol):
         self.transport = None
         self.last_five_packets = deque(maxlen=10)
 
+
     def connection_made(self, transport):
         self.transport = transport
         self.peername = transport.get_extra_info('peername')
         # print(f"TCP server is ready and listening on port {self.port}")
+
 
     def data_received(self, data: bytes):
         data = data.hex()
@@ -80,6 +90,7 @@ class TCPServer(asyncio.Protocol):
             db.add_new_payload(self.peername[0], self.port, protocol, data, datetime.now().timestamp(), self.protocol_type, True if protocol == "POTENTIAL BOTNETS" else False, ip_data["location"], ip_data["asn"], ip_data["organization"], ip_data["isp"])
         except Exception as err:
             logging.warning(f"Failed to log data. Reason: {err}")
+
 
     def connection_lost(self, exc):
         if exc:

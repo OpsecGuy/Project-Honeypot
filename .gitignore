@@ -1,0 +1,6 @@
+application.log
+config.json
+__pycache__/
+send_data.py
+update_ip_data.py
+.vscode/launch.json
